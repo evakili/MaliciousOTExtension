@@ -4,17 +4,15 @@ CFLAGS=-fPIC
 COMPILER_OPTIONS=-O3
 DEBUG_OPTIONS=-g3
 BATCH=
-prefix=/usr
-
-SHARED_LIB_OPT=-dynamiclib
-SHARED_LIB_EXT=.dylib
 
 ifeq ($(uname_S),Linux)
 	SHARED_LIB_EXT=.so
+	SHARED_LIB_OPT=-shared
 endif
 
 ifeq ($(uname_S),Darwin)
 	SHARED_LIB_EXT=.dylib
+	SHARED_LIB_OPT=-dynamiclib
 endif
 
 # external libs (linking options)
@@ -22,10 +20,12 @@ endif
 BOOST= #-I /usr/local/boost_1_49_0/
 BOOST_LIBRARIES= #-lboost_system -lboost_thread
 
-INCLUDE_ARCHIVES_START=-Wl,-all_load
-INCLUDE_ARCHIVES_END=
+LIBRARIES=$(INCLUDE_ARCHIVES_START) -lpthread -lssl /usr/lib/libmiracl.a -lcrypto 
+ifeq ($(uname_S),Darwin) # bugfix in mac os x
+	LIBRARIES += /usr/local/Cellar/gcc49/4.9.1/lib/gcc/x86_64-apple-darwin13.3.0/4.9.1/libstdc++.a
+endif
+LIBRARIES += $(INCLUDE_ARCHIVES_END) #-lgmp -lgmpxx
 
-LIBRARIES=$(INCLUDE_ARCHIVES_START) -lpthread -lssl /usr/lib/libmiracl.a -lcrypto /usr/local/Cellar/gcc49/4.9.1/lib/gcc/x86_64-apple-darwin13.3.0/4.9.1/libstdc++.a $(INCLUDE_ARCHIVES_END) #-lgmp -lgmpxx 
 LIBRARIES_DIR=-L$(prefix)/ssl/lib -L$(prefix)/lib
 
 # target names
@@ -75,13 +75,14 @@ ${OBJECTS_OT}: ${SOURCES_OT}
 
 install:
 	install -d $(libdir)
-	install -d $(prefix)/include/OTExtension/ot
-	install -d $(prefix)/include/OTExtension/util
-	install -m 0644 libOTExtension${SHARED_LIB_EXT} $(libdir)
-	install -m 0644 ot/*.h $(prefix)/include/OTExtension/ot
-	install -m 0644 util/*.h $(prefix)/include/OTExtension/util
+	install -d $(includedir)/MaliciousOTExtension/ot
+	install -d $(includedir)/MaliciousOTExtension/util
+	install -m 0644 libMaliciousOTExtension${SHARED_LIB_EXT} $(libdir)
+	install -m 0644 ot/*.h $(includedir)/MaliciousOTExtension/ot
+	install -m 0644 util/*.h $(includedir)/MaliciousOTExtension/util
 
 clean:
 	rm -rf *.exe ${OBJECTS_UTIL} ${OBJECTS_OTMAINMALICIOUS} ${OBJECTS_OT}
-	rm -f *${SHARED_LIB_EXT}
-
+	rm -f *.so
+	rm -f *.dylib
+	rm -f *.jnilib
