@@ -11,7 +11,7 @@ class CSocket
 public:
 	CSocket(){ m_hSock = INVALID_SOCKET; }
 	~CSocket(){ }
-	//~CSocket(){ cout << "Closing Socket!" << endl; Close(); }
+	//~CSocket(){ cerr << "Closing Socket!" << endl; Close(); }
 	
 public:
 	BOOL Socket()
@@ -48,7 +48,7 @@ public:
 		//setsockopt(m_hSock, IPPROTO_TCP, TCP_MAXSEG , (char*)&OptSegSizeLen, OptSegSize);
 		// disable tcp slow start - (false)
 		//setsockopt(m_hSock, IPPROTO_TCP, TM_TCP_SLOW_START , (char*)&bOptVal, bOptLen);
-		//cout << "TCP_MAXSEG: " << TCP_MAXSEG << endl;
+		//cerr << "TCP_MAXSEG: " << TCP_MAXSEG << endl;
 		return success;
 	
 	}
@@ -207,7 +207,7 @@ public:
 
 	int Receive(void* pBuf, int nLen, int nFlags = 0)
 	{
-		//cout << "Receiving " << nLen << " bytes" << endl;
+		//cerr << "Receiving " << nLen << " bytes" << endl;
 		char* p = (char*) pBuf;
 		int n = nLen;
 		int ret = 0;
@@ -249,7 +249,7 @@ public:
  
 	int Send(const void* pBuf, int nLen, int nFlags = 0)
 	{
-		//cout << "Sending " << nLen << " bytes: " << ((unsigned int*)pBuf)[0] << endl;
+		//cerr << "Sending " << nLen << " bytes: " << ((unsigned int*)pBuf)[0] << endl;
 		return send(m_hSock, (char*)pBuf, nLen, nFlags);
 	}	
 	  
