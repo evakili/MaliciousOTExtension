@@ -52,7 +52,7 @@ BOOL NaorPinkas::Receiver(int nSndVals, int nOTs, CBitVector& choices,
 		} else {
 			FieldElementSet(PK0, PK_sigma[k]);//PK0 = PK_sigma[k];
 		}
-		//cout << "PK0: " << PK0 << ", PK_sigma: " << PK_sigma[k] << ", choice: " << choice << ", pC[choice: " << pC[choice] << endl;
+		//cerr << "PK0: " << PK0 << ", PK_sigma: " << PK_sigma[k] << ", choice: " << choice << ", pC[choice: " << pC[choice] << endl;
 		FieldElementToByte(pBufIdx, m_fParams.elebytelen, PK0);
 		pBufIdx += m_fParams.elebytelen;
 	}

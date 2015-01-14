@@ -156,7 +156,7 @@ public:
 			rowaptr = (REGISTER_SIZE*) matrix;
 			rowbptr = rowaptr + destidx;//ptr = temp_mat;
 
-			//cout << "numrounds = " << numrounds << " iterations: " <<endl;
+			//cerr << "numrounds = " << numrounds << " iterations: " <<endl;
 			//Preset the masks that are required for bit-level swapping operations
 
 			mask = TRANSPOSITION_MASKS[i];
@@ -249,9 +249,9 @@ public:
 		{
 			for(int j = 0; j < 128; j++)
 			{
-				cout << !!(matrix[(i*128 + j)/8] & (1<<(j%8)));
+				cerr << !!(matrix[(i*128 + j)/8] & (1<<(j%8)));
 			}
-			cout << endl;
+			cerr << endl;
 		}
 	}
 
