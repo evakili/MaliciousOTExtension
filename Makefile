@@ -20,7 +20,7 @@ endif
 BOOST= #-I /usr/local/boost_1_49_0/
 BOOST_LIBRARIES= #-lboost_system -lboost_thread
 
-LIBMIRACL = ../../install/lib/libmiracl.a
+LIBMIRACL = $(prefix)/lib/libmiracl.a
 
 LIBRARIES=$(INCLUDE_ARCHIVES_START) -lpthread -lssl $(LIBMIRACL) -lcrypto 
 ifeq ($(uname_S),Darwin) # bugfix in mac os x
