@@ -20,7 +20,9 @@ endif
 BOOST= #-I /usr/local/boost_1_49_0/
 BOOST_LIBRARIES= #-lboost_system -lboost_thread
 
-LIBRARIES=$(INCLUDE_ARCHIVES_START) -lpthread -lssl /usr/lib/libmiracl.a -lcrypto 
+LIBMIRACL = $(prefix)/lib/libmiracl.a
+
+LIBRARIES=$(INCLUDE_ARCHIVES_START) -lpthread -lssl $(LIBMIRACL) -lcrypto 
 ifeq ($(uname_S),Darwin) # bugfix in mac os x
 	LIBRARIES += /usr/local/Cellar/gcc49/4.9.1/lib/gcc/x86_64-apple-darwin13.3.0/4.9.1/libstdc++.a
 endif
