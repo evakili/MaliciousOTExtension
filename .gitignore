@@ -1,3 +1,11 @@
 *~
 *.o
 *.exe
+
+*.suo
+*.obj
+*.tlog
+*.log
+*.pdb
+*.idb
+*.lastbuildstate
