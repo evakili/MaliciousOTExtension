@@ -54,11 +54,11 @@ public:
 	
 	}
 
-	void setBlockingMode(long mode){
-		u_long args = mode;
-		// set the socket to non-blocking mode:
-		ioctlsocket(m_hSock, FIONBIO, &args);
-	}
+//	void setBlockingMode(long mode){
+//		u_long args = mode;
+//		// set the socket to non-blocking mode:
+//		ioctlsocket(m_hSock, FIONBIO, &args);
+//	}
 
 	void DisableNagle(){
 		// disable nagle: using TCP_NODELAY = 1 (true)
