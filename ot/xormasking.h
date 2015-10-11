@@ -39,7 +39,7 @@ public:
 			int length = processedOTs * m_nBitLength;
 			int bytePos = CEIL_DIVIDE(bitPos, 8);
 
-			//cout << "Performing masking for " << bytePos << " and " << bitPos << " to " << length << "(" << m_nBitLength << ", " << processedOTs << ")"<< endl;
+			//cerr << "Performing masking for " << bytePos << " and " << bitPos << " to " << length << "(" << m_nBitLength << ", " << processedOTs << ")"<< endl;
 			values[1].SetBits(values[0].GetArr() + bytePos, bitPos, length);
 			values[1].XORBits(m_vDelta->GetArr() + bytePos, bitPos, length);
 			snd_buf[1].XORBits(values[1].GetArr() + bytePos, 0, length);
@@ -50,7 +50,7 @@ public:
 			int length = processedOTs * m_nBitLength;
 			int bytePos = CEIL_DIVIDE(bitPos, 8);
 
-			//cout << "Performing masking for " << bytePos << " and " << bitPos << " to " << length << "(" << m_nBitLength << ", " << processedOTs << ")"<< endl;
+			//cerr << "Performing masking for " << bytePos << " and " << bitPos << " to " << length << "(" << m_nBitLength << ", " << processedOTs << ")"<< endl;
 			values[1].SetBits(values[0].GetArr() + bytePos, bitPos, length);
 			values[1].XORBits(m_vDelta->GetArr() + bytePos, bitPos, length);
 			snd_buf[0].XORBits(values[1].GetArr() + bytePos, 0, length);
@@ -64,7 +64,7 @@ public:
 		int length = processedOTs * m_nBitLength;
 		int bytePos = CEIL_DIVIDE(bitPos, 8);
 
-		//cout << "Performing masking for " << bytePos << " and " << bitPos << " to " << length << "(" << m_nBitLength << ", " << processedOTs << ")"<< endl;
+		//cerr << "Performing masking for " << bytePos << " and " << bitPos << " to " << length << "(" << m_nBitLength << ", " << processedOTs << ")"<< endl;
 		values[1].SetBits(values[0].GetArr() + bytePos, bitPos, length);
 		values[1].XORBits(m_vDelta->GetArr() + bytePos, bitPos, length);
 
@@ -119,14 +119,14 @@ public:
 		{
 			for(int i = 0; i< processedOTs; i++, sbp+=AES_KEY_BYTES)
 			{
-			//	cout << "Setting bits from " << (offset + i) * bitlength << " with " << bitlength << " len " << endl;
-				//cout << "Byte: " << ((unsigned int) sbp[0]) << ", bitlenh = " << bitlength << ", pos = " << (offset + i) * bitlength << ", ";
+			//	cerr << "Setting bits from " << (offset + i) * bitlength << " with " << bitlength << " len " << endl;
+				//cerr << "Byte: " << ((unsigned int) sbp[0]) << ", bitlenh = " << bitlength << ", pos = " << (offset + i) * bitlength << ", ";
 
 				out.SetBits(sbp, (offset + i) * bitlength, bitlength);
 				//out.PrintBinary();
 
 			}
-			//cout << "Out = "<< endl;
+			//cerr << "Out = "<< endl;
 			//out.PrintHex();
 		}
 		else
@@ -145,7 +145,7 @@ public:
 					out.SetBits(m_bBuf, (offset+ i) * bitlength + (counter*AES_BITS), AES_BITS);
 				}
 				//the final bits
-				//cout << "bits: " << (counter*AES_BITS) << ", bitlength: " << m_nBitLength << endl;
+				//cerr << "bits: " << (counter*AES_BITS) << ", bitlength: " << m_nBitLength << endl;
 				if((rem = bitlength - (counter*AES_BITS)) > 0)
 				{
 					MPC_AES_ENCRYPT(&tkey, m_bBuf, ctr_buf);

@@ -1,9 +1,7 @@
-#pragma once
 #ifndef __TYPEDEFS_H__
 #define __TYPEDEFS_H__
 
-
-#include <time.h>
+#include <sys/time.h>
 #include <assert.h>
 
 #define MAXGATES 32000000

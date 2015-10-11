@@ -26,9 +26,9 @@ typedef struct SECURITYLEVELS
 	int ecckcbits;
 } SECLVL;
 
-#include <ecn.h>
-#include <big.h>
-#include <ec2.h>
+#include <miracl/ecn.h>
+#include <miracl/big.h>
+#include <miracl/ec2.h>
 #ifdef OTEXT_USE_GMP
 #include <gmp.h>
 #endif

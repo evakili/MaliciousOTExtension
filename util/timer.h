@@ -8,7 +8,7 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
-#include <time.h>
+#include <sys/time.h>
 #include <string>
 #include <iostream>
 #include <stdlib.h>
@@ -46,10 +46,10 @@ static void StartWatch(const string& msg, ABYPHASE phase) {
 			cerr << "Phase not recognized: " << phase << endl;
 			return;
 	}
-	//cout << " m_nTimings, " << m_nTimings <<  ", phase = " << (unsigned int) phase << endl;
-	//gettimeofday(&(m_tTimes[phase].tbegin), NULL);
+	//cerr << " m_nTimings, " << m_nTimings <<  ", phase = " << (unsigned int) phase << endl;
+	gettimeofday(&(m_tTimes[phase].tbegin), NULL);
 #ifndef BATCH
-	cout << msg << endl;
+	cerr << msg << endl;
 #endif
 }
 
@@ -62,12 +62,12 @@ static void StopWatch(const string& msg, ABYPHASE phase) {
 		return;
 	}*/
 
-	//gettimeofday(&(m_tTimes[phase].tend), NULL);
+	gettimeofday(&(m_tTimes[phase].tend), NULL);
 	m_tTimes[phase].timing = getMillies(m_tTimes[phase].tbegin, m_tTimes[phase].tend);
 
 
 #ifndef BATCH
-	cout << msg << m_tTimes[phase].timing << " ms " << endl;
+	cerr << msg << m_tTimes[phase].timing << " ms " << endl;
 #endif
 
 }
@@ -75,16 +75,16 @@ static void StopWatch(const string& msg, ABYPHASE phase) {
 
 static void PrintTimings() {
 	string unit = " ms";
-	cout << "Timings: " << endl;
-	cout << "Total =\t\t" << m_tTimes[0].timing << unit << endl;
-	cout << "Init =\t\t" << m_tTimes[1].timing << unit << endl;
-	cout << "CircuitGen =\t" << m_tTimes[2].timing << unit << endl;
-	cout << "Network =\t" << m_tTimes[3].timing << unit << endl;
-	cout << "BaseOTs =\t" << m_tTimes[4].timing << unit << endl;
-	cout << "Setup =\t\t" << m_tTimes[5].timing << unit << endl;
-	cout << "OTExtension =\t" << m_tTimes[6].timing << unit << endl;
-	cout << "Garbling =\t" << m_tTimes[7].timing << unit << endl;
-	cout << "Online =\t" << m_tTimes[8].timing << unit << endl;
+	cerr << "Timings: " << endl;
+	cerr << "Total =\t\t" << m_tTimes[0].timing << unit << endl;
+	cerr << "Init =\t\t" << m_tTimes[1].timing << unit << endl;
+	cerr << "CircuitGen =\t" << m_tTimes[2].timing << unit << endl;
+	cerr << "Network =\t" << m_tTimes[3].timing << unit << endl;
+	cerr << "BaseOTs =\t" << m_tTimes[4].timing << unit << endl;
+	cerr << "Setup =\t\t" << m_tTimes[5].timing << unit << endl;
+	cerr << "OTExtension =\t" << m_tTimes[6].timing << unit << endl;
+	cerr << "Garbling =\t" << m_tTimes[7].timing << unit << endl;
+	cerr << "Online =\t" << m_tTimes[8].timing << unit << endl;
 }
 
 static double GetTimeForPhase(ABYPHASE phase) {

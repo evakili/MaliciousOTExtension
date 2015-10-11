@@ -42,7 +42,7 @@ BOOL Mal_OTExtensionReceiver::receive(int numThreads)
 	}
 	
 	ReceiveAndProcess(numThreads);
-	
+
 	for(int i = 0; i < numThreads; i++) 	{
 		rThreads[i]->Wait();
 	}
@@ -55,14 +55,15 @@ BOOL Mal_OTExtensionReceiver::receive(int numThreads)
 		m_nRet.Copy(m_vTempOTMasks.GetArr(), 0, CEIL_DIVIDE(m_nOTs * m_nBitLength, 8));
 		m_vTempOTMasks.delCBitVector();
 	}
-	
+
 #ifdef VERIFY_OT
 	//Wait for the signal of the corresponding sender thread
 	BYTE finished = 0x01;
 	m_vSockets[0].Send(&finished, 1);
 	verifyOT(m_nOTs);
 #endif
-	
+
+
 	return true;
 }
 
@@ -70,13 +71,13 @@ BOOL Mal_OTExtensionReceiver::receive(int numThreads)
 
 BOOL Mal_OTExtensionReceiver::OTReceiverRoutine(int id, int myNumOTs)
 {
-	//cout << "Thread " << id << " started" << endl;
+	//cerr << "Thread " << id << " started" << endl;
 	int myStartPos = id * myNumOTs;
 	int i = myStartPos, nProgress = myStartPos;
 	int RoundWindow = 2;
 	int roundctr = 0;
 	int wd_size_bits = 1 << (CEIL_LOG2(m_nBaseOTs));
-	//cout << "window size = " << wd_size_bits << endl;
+	//cerr << "window size = " << wd_size_bits << endl;
 
 	myNumOTs = min(myNumOTs + myStartPos, m_nOTs) - myStartPos;
 	int lim = myStartPos+myNumOTs;
@@ -102,7 +103,7 @@ BOOL Mal_OTExtensionReceiver::OTReceiverRoutine(int id, int myNumOTs)
 
 	// The send buffer
 	CBitVector vSnd(m_nBaseOTs * OTsPerIteration);
-	//cout << "vSnd size = " << m_nBaseOTs * OTsPerIteration << "(" << m_nBaseOTs << ", " << OTsPerIteration << ")" << endl;
+	//cerr << "vSnd size = " << m_nBaseOTs * OTsPerIteration << "(" << m_nBaseOTs << ", " << OTsPerIteration << ")" << endl;
 
 	// A temporary buffer that stores the resulting seeds from the hash buffer
 	CBitVector seedbuf(OTwindow*AES_KEY_BITS);// = new CBitVector[RoundWindow];
@@ -138,7 +139,7 @@ BOOL Mal_OTExtensionReceiver::OTReceiverRoutine(int id, int myNumOTs)
  		totalTnsTime += getMillies(tempStart, tempEnd);
  		gettimeofday(&tempStart, NULL);
 #endif
- 		//cout << "offset: " << (AES_KEY_BYTES * (i-nProgress))<< ", i = " << i << ", nprogress = " << nProgress << ", otwindow = " << OTwindow << endl;
+ 		//cerr << "offset: " << (AES_KEY_BYTES * (i-nProgress))<< ", i = " << i << ", nprogress = " << nProgress << ", otwindow = " << OTwindow << endl;
 		HashValues(T, seedbuf, i, min(lim-i, OTsPerIteration));
 #ifdef OTTiming
  		gettimeofday(&tempEnd, NULL);
@@ -178,17 +179,17 @@ BOOL Mal_OTExtensionReceiver::OTReceiverRoutine(int id, int myNumOTs)
 	seedbuf.delCBitVector();
 
 #ifdef OTTiming
-	cout << "Receiver time benchmark for performing " << myNumOTs << " OTs on " << m_nBitLength << " bit strings" << endl;
-	cout << "Time needed for: " << endl;
-	cout << "\t Matrix Generation:\t" << totalMtxTime << " ms" << endl;
-	cout << "\t Sending Matrix:\t" << totalSndTime << " ms" << endl;
-	cout << "\t Transposing Matrix:\t" << totalTnsTime << " ms" << endl;
-	cout << "\t Hashing Matrix:\t" << totalHshTime << " ms" << endl;
-	cout << "\t Receiving Values:\t" << totalRcvTime << " ms" << endl;
-	cout << "\t Checking Consistency:\t" << totalChkTime << " ms" << endl;
+	cerr << "Receiver time benchmark for performing " << myNumOTs << " OTs on " << m_nBitLength << " bit strings" << endl;
+	cerr << "Time needed for: " << endl;
+	cerr << "\t Matrix Generation:\t" << totalMtxTime << " ms" << endl;
+	cerr << "\t Sending Matrix:\t" << totalSndTime << " ms" << endl;
+	cerr << "\t Transposing Matrix:\t" << totalTnsTime << " ms" << endl;
+	cerr << "\t Hashing Matrix:\t" << totalHshTime << " ms" << endl;
+	cerr << "\t Receiving Values:\t" << totalRcvTime << " ms" << endl;
+	cerr << "\t Checking Consistency:\t" << totalChkTime << " ms" << endl;
 #endif
 #ifndef BATCH
-	//cout << "Receiver finished successfully" << endl;
+	cerr << "Receiver finished successfully" << endl;
 #endif
 	//sleep(1);
 	return TRUE;
@@ -210,20 +211,20 @@ void Mal_OTExtensionReceiver::BuildMatrices(CBitVector& T, CBitVector& SndBuf, i
 	AES_KEY_CTX* seedptr = m_vKeySeedMtx;
 	//How many blocks have been processed until now
 	int blockoffset = CEIL_DIVIDE(ctr, NUMOTBLOCKS * wd_size_bytes * 8);
-	//cout << "Using block: " << blockoffset << " total = " << (m_nBaseOTs * m_nSndVals * blockoffset) << ", and numblocks = " << numblocks << ", baseOTs = " << m_nBaseOTs << ", m_nSndVals = " << m_nSndVals << endl;
+	//cerr << "Using block: " << blockoffset << " total = " << (m_nBaseOTs * m_nSndVals * blockoffset) << ", and numblocks = " << numblocks << ", baseOTs = " << m_nBaseOTs << ", m_nSndVals = " << m_nSndVals << endl;
 	seedptr += (m_nBaseOTs * m_nSndVals * blockoffset);
 
 	for(int k = 0; k < m_nBaseOTs; k++) 	{
 		for(int b = 0; b < rowbytelen/ AES_BYTES; b++, (*counter)++) {
 			MPC_AES_ENCRYPT(seedptr + 2*k, Tptr, ctr_buf);
 #ifdef DEBUG_MALICIOUS
-			cout << "correct: Tka = " << k << ": " << (hex) << ((uint64_t*) Tptr)[0] << ((uint64_t*) Tptr)[1] << (hex) << endl;
+			cerr << "correct: Tka = " << k << ": " << (hex) << ((uint64_t*) Tptr)[0] << ((uint64_t*) Tptr)[1] << (hex) << endl;
 #endif
 			Tptr+=AES_BYTES;
 
 			MPC_AES_ENCRYPT(seedptr + (2*k) + 1, sndbufptr, ctr_buf);
 #ifdef DEBUG_MALICIOUS
-			cout << "correct: Tkb = " << k << ": " << (hex) << ((uint64_t*) sndbufptr)[0] << ((uint64_t*) sndbufptr)[1] << (hex) << endl;
+			cerr << "correct: Tkb = " << k << ": " << (hex) << ((uint64_t*) sndbufptr)[0] << ((uint64_t*) sndbufptr)[1] << (hex) << endl;
 #endif
 			sndbufptr+=AES_BYTES;
 		}
@@ -262,10 +263,10 @@ void Mal_OTExtensionReceiver::HashValues(CBitVector& T, CBitVector& seedbuf, int
 		}
 
 #ifdef OT_HASH_DEBUG
-			cout << "Hash-In for i = " << i << ": " << (hex);
+			cerr << "Hash-In for i = " << i << ": " << (hex);
 			for(int p = 0; p < hashinbytelen; p++)
-				cout << (unsigned int) Tptr[p];
-			cout << (dec) << ", choice-bit = " << (unsigned int) m_nChoices.GetBitNoMask(i) << endl;
+				cerr << (unsigned int) Tptr[p];
+			cerr << (dec) << ", choice-bit = " << (unsigned int) m_nChoices.GetBitNoMask(i) << endl;
 #endif
 
 #ifdef FIXED_KEY_AES_HASHING
@@ -313,8 +314,8 @@ void Mal_OTExtensionReceiver::ReceiveAndProcess(int numThreads)
 
 	while(progress < m_nOTs)
 	{
-		//cout << "Waiting for block " << endl;
-		//cout << "Processing blockid " << OTid;
+		//cerr << "Waiting for block " << endl;
+		//cerr << "Processing blockid " << OTid;
 		m_vSockets[csockid].Receive((BYTE*) &otid, sizeof(int));
 		m_vSockets[csockid].Receive((BYTE*) &processedOTs, sizeof(int));
 
@@ -324,7 +325,7 @@ void Mal_OTExtensionReceiver::ReceiveAndProcess(int numThreads)
 		m_vSockets[csockid].Receive((BYTE*) &(chk_vals.threadid), sizeof(int));
 		m_vSockets[csockid].Receive((BYTE*) &(chk_vals.nchecks), sizeof(int));
 #ifdef DEBUG_MALICIOUS
-		cout << "Checking otid = " << chk_vals.otid << " of len " << processedOTs << " for thread "
+		cerr << "Checking otid = " << chk_vals.otid << " of len " << processedOTs << " for thread "
 				<< chk_vals.threadid << " and doing " << chk_vals.nchecks << " checks" << endl;
 #endif
 		chk_vals.perm = (linking_t*) malloc(sizeof(linking_t) * chk_vals.nchecks);
@@ -357,11 +358,11 @@ void Mal_OTExtensionReceiver::ReceiveAndProcess(int numThreads)
 #endif
 
 		if(m_bProtocol == G_OT || m_bProtocol == C_OT || m_bProtocol == S_OT) {
-			//cout << " with " << processedOTs << " OTs ";
+			//cerr << " with " << processedOTs << " OTs ";
 			rcvbytes = CEIL_DIVIDE(processedOTs * m_nBitLength, 8);
 			if(m_bProtocol == G_OT)
 				rcvbytes = rcvbytes*m_nSndVals;
-			//cout << "Receiving " << rcvbytes << " bytes" << endl;
+			//cerr << "Receiving " << rcvbytes << " bytes" << endl;
 			rcvbytes = m_vSockets[csockid].Receive(vRcv.GetArr(), rcvbytes);
 
 			m_fMaskFct->UnMask(otid, processedOTs, m_nChoices, m_nRet, vRcv, m_vTempOTMasks, m_bProtocol);
@@ -380,8 +381,8 @@ void Mal_OTExtensionReceiver::ReceiveAndProcess(int numThreads)
 	}
 
 #ifdef OTTiming
-	cout << "Total time spent processing received data: " << totalUnmaskTime << " ms" << endl;
-	cout << "Total time spent ensuring malicious security: " << totalCheckTime << " ms" << endl;
+	cerr << "Total time spent processing received data: " << totalUnmaskTime << " ms" << endl;
+	cerr << "Total time spent ensuring malicious security: " << totalCheckTime << " ms" << endl;
 #endif
 
 	vRcv.delCBitVector();
@@ -408,7 +409,7 @@ void Mal_OTExtensionReceiver::EnqueueSeed(BYTE* T0, BYTE* T1, int ctr, int numbl
 		m_tSeedTail->next = seedstr;
 		m_tSeedTail = seedstr;
 	}
-	//cout << "added seed with blockid = " << ctr << endl;
+	//cerr << "added seed with blockid = " << ctr << endl;
 	m_lSeedLock->Unlock();
 }
 
@@ -435,7 +436,7 @@ void Mal_OTExtensionReceiver::ComputeOWF(rcv_check_t* chk_vals) {//linking_t* pe
 	}
 	//the seeds have to exist
 	assert(seedptr->blockid == chk_vals->otid);// && seedptr->expstrbitlen == PadToMultiple(processedOTs, wd_size_bits));
-	//cout << seedptr->expstrbitlen << ", vs. " << wd_size_bits << endl;
+	//cerr << seedptr->expstrbitlen << ", vs. " << wd_size_bits << endl;
 	//case A) is Head
 	if(seedptr == m_tSeedHead) {
 		m_tSeedHead = m_tSeedHead->next;
@@ -473,7 +474,7 @@ void Mal_OTExtensionReceiver::ComputeOWF(rcv_check_t* chk_vals) {//linking_t* pe
 	int rowbytelen = bufrowbytelen;//CEIL_DIVIDE(processedOTs, 8);
 
 #if CHECK_METHOD == 0
-	//cout << "Checking" << endl;
+	//cerr << "Checking" << endl;
 	//Compute all hashes for the permutations given Ta and Tb
 	for(i = 0; i < chk_vals->nchecks; i++) {
 		ka[0] = T0 + chk_vals->perm[i].ida * bufrowbytelen;
@@ -481,18 +482,18 @@ void Mal_OTExtensionReceiver::ComputeOWF(rcv_check_t* chk_vals) {//linking_t* pe
 
 		kb[0] = T0 + chk_vals->perm[i].idb * bufrowbytelen;
 		kb[1] = T1 + chk_vals->perm[i].idb * bufrowbytelen;
-		//cout << "ida = " << permbits[i].ida <<", idb= " <<  permbits[i].idb << endl;
+		//cerr << "ida = " << permbits[i].ida <<", idb= " <<  permbits[i].idb << endl;
 
 		//XOR all four possibilities
 	#ifdef DEBUG_MALICIOUS
-		cout << i << "-th check: between " << chk_vals->perm[i].ida << ", and " << chk_vals->perm[i].idb << endl;
+		cerr << i << "-th check: between " << chk_vals->perm[i].ida << ", and " << chk_vals->perm[i].idb << endl;
 	#endif
 		for(j = 0; j < RECEIVER_HASHES; j++, outptr+=OWF_BYTES) {
 			kaptr = ka[j>>1];
 			kbptr = kb[j&0x01];
 
-			for(k = 0; k < rowbytelen / sizeof(__int64); k++) {
-				((__int64*) tmpbuf)[k] = ((__int64*) kaptr)[k] ^ ((__int64*) kbptr)[k];
+			for(k = 0; k < rowbytelen / sizeof(uint64_t); k++) {
+				((uint64_t*) tmpbuf)[k] = ((uint64_t*) kaptr)[k] ^ ((uint64_t*) kbptr)[k];
 			}
 	#ifdef AES_OWF
 			owf(&aesowfkey, rowbytelen, tmpbuf, outptr);
@@ -501,7 +502,7 @@ void Mal_OTExtensionReceiver::ComputeOWF(rcv_check_t* chk_vals) {//linking_t* pe
 	#endif
 		}
 	#ifdef DEBUG_MALICIOUS
-		cout << endl;
+		cerr << endl;
 	#endif
 	}
 #else
@@ -509,19 +510,19 @@ void Mal_OTExtensionReceiver::ComputeOWF(rcv_check_t* chk_vals) {//linking_t* pe
 	BYTE* receiver_choicebits = m_nChoices.GetArr() + CEIL_DIVIDE(chk_vals->otid, 8);
 	CBitVector tmp;
 	tmp.AttachBuf(tmpbuf, bufrowbytelen*8);
-	//cout << "Choice bits: " << endl;
+	//cerr << "Choice bits: " << endl;
 	//m_nChoices.PrintHex();
-	//cout << "Checking" << endl;
+	//cerr << "Checking" << endl;
 	//Compute all hashes for the permutations given Ta, Tb and the choice bits
 	for(i = 0; i < chk_vals->nchecks; i++, sender_permchoicebits++) {
 		ka[0] = T0 + chk_vals->perm[i].ida * bufrowbytelen;
 		kb[0] = T0 + chk_vals->perm[i].idb * bufrowbytelen;
 
-		//cout << "ida = " << permbits[i].ida <<", idb= " <<  permbits[i].idb << endl;
+		//cerr << "ida = " << permbits[i].ida <<", idb= " <<  permbits[i].idb << endl;
 
 		//XOR all four possibilities
 	#ifdef DEBUG_MALICIOUS
-		cout << (dec) << i << "-th check: between " << chk_vals->perm[i].ida << ", and " << chk_vals->perm[i].idb << endl;
+		cerr << (dec) << i << "-th check: between " << chk_vals->perm[i].ida << ", and " << chk_vals->perm[i].idb << endl;
 	#endif
 		for(j = 0; j < RECEIVER_HASHES; j++, outptr+=OWF_BYTES) {
 			kaptr = ka[0];
@@ -541,12 +542,12 @@ void Mal_OTExtensionReceiver::ComputeOWF(rcv_check_t* chk_vals) {//linking_t* pe
 	#endif
 		}
 	#ifdef DEBUG_MALICIOUS
-		cout << endl;
+		cerr << endl;
 	#endif
 	}
 #endif
 
-	//cout << "Finishing check" << endl;
+	//cerr << "Finishing check" << endl;
 	free(tmpbuf);
 	free(ka);
 	free(kb);
@@ -565,11 +566,8 @@ void Mal_OTExtensionReceiver::ComputeOWF(rcv_check_t* chk_vals) {//linking_t* pe
 BOOL Mal_OTExtensionReceiver::verifyOT(int NumOTs)
 {
 	CSocket sock = m_vSockets[0];
-	u_int64 temp = m_nBitLength;
-	temp = temp * NUMOTBLOCKS * AES_BITS;
-	cout<<"num of bits is: " <<temp<<endl;
-	CBitVector vRcvX0(temp);
-	CBitVector vRcvX1(temp);
+	CBitVector vRcvX0(NUMOTBLOCKS*AES_BITS*m_nBitLength);
+	CBitVector vRcvX1(NUMOTBLOCKS*AES_BITS*m_nBitLength);
 	CBitVector* Xc;
 	int processedOTBlocks, OTsPerIteration;
 	int bytelen = CEIL_DIVIDE(m_nBitLength, 8);
@@ -593,7 +591,7 @@ BOOL Mal_OTExtensionReceiver::verifyOT(int NumOTs)
 			{
 				if(tempXc[k] != tempRet[k])
 				{
-					cout << "Error at position i = " << i << ", k = " << k << ", with X" << (hex) << (unsigned int) m_nChoices.GetBitNoMask(i)
+					cerr << "Error at position i = " << i << ", k = " << k << ", with X" << (hex) << (unsigned int) m_nChoices.GetBitNoMask(i)
 							<< " = " << (unsigned int) tempXc[k] << " and res = " << (unsigned int) tempRet[k] << (dec) << endl;
 					resp = 0x00;
 					sock.Send(&resp, 1);
@@ -611,7 +609,7 @@ BOOL Mal_OTExtensionReceiver::verifyOT(int NumOTs)
 	vRcvX1.delCBitVector();
 
 
-	//cout << "OT Verification successful" << endl;
+	cerr << "OT Verification successful" << endl;
 	return true;
 }
 
@@ -725,7 +723,7 @@ BOOL Mal_OTExtensionSender::OTSenderRoutine(int id, int myNumOTs)
 	for(int u = 0; u < m_nSndVals; u++)
 		seedbuf[u].Create(OTsPerIteration* AES_KEY_BITS);
 #ifdef ZDEBUG
-	cout << "seedbuf size = " <<OTsPerIteration * AES_KEY_BITS << endl;
+	cerr << "seedbuf size = " <<OTsPerIteration * AES_KEY_BITS << endl;
 #endif
 	vSnd = new CBitVector[numsndvals];//(CBitVector*) malloc(sizeof(CBitVector) * numsndvals);
 	for(int i = 0; i < numsndvals; i++) 	{
@@ -767,7 +765,7 @@ BOOL Mal_OTExtensionSender::OTSenderRoutine(int id, int myNumOTs)
 		OTsPerIteration = processedOTBlocks * wd_size_bits;
 
 #ifdef ZDEBUG
-		cout << "Processing block " << nProgress << " with length: " << OTsPerIteration << ", and limit: " << lim << endl;
+		cerr << "Processing block " << nProgress << " with length: " << OTsPerIteration << ", and limit: " << lim << endl;
 #endif
 
 #ifdef OTTiming
@@ -817,17 +815,17 @@ BOOL Mal_OTExtensionSender::OTSenderRoutine(int id, int myNumOTs)
 	if(numsndvals > 0)	free(vSnd);
 
 #ifdef OTTiming
-	cout << "Sender time benchmark for performing " << myNumOTs << " OTs on " << m_nBitLength << " bit strings" << endl;
-	cout << "Time needed for: " << endl;
-	cout << "\t Matrix Generation:\t" << totalMtxTime << " ms" << endl;
-	cout << "\t Sending Matrix:\t" << totalSndTime << " ms" << endl;
-	cout << "\t Transposing Matrix:\t" << totalTnsTime << " ms" << endl;
-	cout << "\t Hashing Matrix:\t" << totalHshTime << " ms" << endl;
-	cout << "\t Receiving Values:\t" << totalRcvTime << " ms" << endl;
+	cerr << "Sender time benchmark for performing " << myNumOTs << " OTs on " << m_nBitLength << " bit strings" << endl;
+	cerr << "Time needed for: " << endl;
+	cerr << "\t Matrix Generation:\t" << totalMtxTime << " ms" << endl;
+	cerr << "\t Sending Matrix:\t" << totalSndTime << " ms" << endl;
+	cerr << "\t Transposing Matrix:\t" << totalTnsTime << " ms" << endl;
+	cerr << "\t Hashing Matrix:\t" << totalHshTime << " ms" << endl;
+	cerr << "\t Receiving Values:\t" << totalRcvTime << " ms" << endl;
 #endif
 
 #ifndef BATCH
-	//cout << "Sender finished successfully" << endl;
+	cerr << "Sender finished successfully" << endl;
 #endif
 	return TRUE;
 }
@@ -842,14 +840,14 @@ void Mal_OTExtensionSender::BuildQMatrix(CBitVector& T, CBitVector& RcvBuf, int 
 	int tempctr = *counter;
 	int wd_size_bytes = 1 << (CEIL_LOG2(m_nBaseOTs) -3);
 	int rowbytelen = wd_size_bytes * numblocks;
-	//cout << "counter =  " << (dec) << tempctr << endl;
+	//cerr << "counter =  " << (dec) << tempctr << endl;
 
 	AES_KEY_CTX* seedptr = m_vKeySeeds;
 	int otid = (*counter) - m_nCounter;
 	//How many blocks have been processed until now
 	int blockoffset = CEIL_DIVIDE(otid, NUMOTBLOCKS * wd_size_bytes * 8);
 	int offset = m_nBaseOTs * blockoffset;
-	//cout << "Using block: " << blockoffset << ", counter = " << *counter << ", wdsize = " << wd_size_bytes*8 << "; ctr = " << m_nCounter << endl;
+	//cerr << "Using block: " << blockoffset << ", counter = " << *counter << ", wdsize = " << wd_size_bytes*8 << "; ctr = " << m_nCounter << endl;
 	seedptr += (offset);
 
 
@@ -857,7 +855,7 @@ void Mal_OTExtensionSender::BuildQMatrix(CBitVector& T, CBitVector& RcvBuf, int 
 		for(int b = 0; b < rowbytelen / AES_BYTES; b++, (*counter)++, Tptr += AES_BYTES) {
 			MPC_AES_ENCRYPT(seedptr + k, Tptr, ctr_buf);
 #ifdef DEBUG_MALICIOUS
-			cout << "k = " << k << ": "<< (hex) << ((uint64_t*) Tptr)[0] << ((uint64_t*) Tptr)[1] << (hex) << endl;
+			cerr << "k = " << k << ": "<< (hex) << ((uint64_t*) Tptr)[0] << ((uint64_t*) Tptr)[1] << (hex) << endl;
 #endif
 
 		}
@@ -897,7 +895,7 @@ void Mal_OTExtensionSender::UpdateCheckBuf(BYTE* tocheckseed, BYTE* tocheckrcv, 
 	//right now the rowbytelen needs to be a multiple of AES_BYTES
 	assert(CEIL_DIVIDE(rowbytelen, OWF_BYTES) * OWF_BYTES == rowbytelen);
 #ifdef DEBUG_MALICIOUS
-	cout << "rowbytelen = " << rowbytelen << endl;
+	cerr << "rowbytelen = " << rowbytelen << endl;
 	m_vU.PrintHex();
 #endif
 
@@ -912,7 +910,7 @@ void Mal_OTExtensionSender::UpdateCheckBuf(BYTE* tocheckseed, BYTE* tocheckrcv, 
 #else
 	for(i = 0; i < m_nChecks; i++, chk_buf_ptr+=OWF_BYTES) {
 	#ifdef DEBUG_MALICIOUS
-		cout << "ca: "  << (unsigned int) m_vU.GetBit(blockoffset * m_nBaseOTs + check_vals->perm[i].ida) <<
+		cerr << "ca: "  << (unsigned int) m_vU.GetBit(blockoffset * m_nBaseOTs + check_vals->perm[i].ida) <<
 				", cb: " << (unsigned int) m_vU.GetBit(blockoffset * m_nBaseOTs + check_vals->perm[i].idb) << endl;
 	#endif
 		memset(tmpbuf, 0, sizeof(BYTE) * rowbytelen);
@@ -937,9 +935,9 @@ void Mal_OTExtensionSender::UpdateCheckBuf(BYTE* tocheckseed, BYTE* tocheckrcv, 
 		}
 
 	#ifdef DEBUG_MALICIOUS
-		cout << "seedA: " <<  (hex) << ((uint64_t*) (tocheckseed + check_vals->perm[i].ida * rowbytelen))[0] << ", rcvA: " << ((uint64_t*) (tocheckrcv + check_vals->perm[i].ida * rowbytelen))[0] << (dec) << endl;
-		cout << "seedB: " <<  (hex) << ((uint64_t*) (tocheckseed + check_vals->perm[i].idb * rowbytelen))[0] << ", rcvB: " << ((uint64_t*) (tocheckrcv + check_vals->perm[i].idb * rowbytelen))[0] << (dec) << endl;
-		cout << "input to owf " <<  (hex) << ((uint64_t*) idatmpbuf)[0] << ", " << ((uint64_t*) idbtmpbuf)[0] << (dec) << endl;
+		cerr << "seedA: " <<  (hex) << ((uint64_t*) (tocheckseed + check_vals->perm[i].ida * rowbytelen))[0] << ", rcvA: " << ((uint64_t*) (tocheckrcv + check_vals->perm[i].ida * rowbytelen))[0] << (dec) << endl;
+		cerr << "seedB: " <<  (hex) << ((uint64_t*) (tocheckseed + check_vals->perm[i].idb * rowbytelen))[0] << ", rcvB: " << ((uint64_t*) (tocheckrcv + check_vals->perm[i].idb * rowbytelen))[0] << (dec) << endl;
+		cerr << "input to owf " <<  (hex) << ((uint64_t*) idatmpbuf)[0] << ", " << ((uint64_t*) idbtmpbuf)[0] << (dec) << endl;
 	#endif
 
 		XORandOWF(idatmpbuf, idbtmpbuf,	rowbytelen, tmpbuf, chk_buf_ptr, hash_buf);
@@ -960,8 +958,8 @@ inline void Mal_OTExtensionSender::XORandOWF(BYTE* idaptr, BYTE* idbptr, int row
 	AES_KEY_CTX aesowfkey;
 	MPC_AES_KEY_INIT(&aesowfkey);
 
-	for(int j = 0; j < rowbytelen/sizeof(__int64); j++) {
-		((__int64*) tmpbuf)[j] = ((__int64*) tmpbuf)[j] ^ ((__int64*) idaptr)[j] ^ ((__int64*) idbptr)[j];
+	for(int j = 0; j < rowbytelen/sizeof(uint64_t); j++) {
+		((uint64_t*) tmpbuf)[j] = ((uint64_t*) tmpbuf)[j] ^ ((uint64_t*) idaptr)[j] ^ ((uint64_t*) idbptr)[j];
 	}
 
 #ifdef AES_OWF
@@ -1023,10 +1021,10 @@ void Mal_OTExtensionSender::MaskInputs(CBitVector& Q, CBitVector* seedbuf, CBitV
 				Q.XORBytes(Utmpptr, j * wd_size_bytes, hashinbytelen);
 
 #ifdef OT_HASH_DEBUG
-			cout << "Hash-In for i = " << i << ", u = " << u << ": " << (hex);
+			cerr << "Hash-In for i = " << i << ", u = " << u << ": " << (hex);
 			for(int p = 0; p < hashinbytelen; p++)
-				cout << (unsigned int) (Q.GetArr() + j * wd_size_bytes)[p];
-			cout << (dec) << endl;
+				cerr << (unsigned int) (Q.GetArr() + j * wd_size_bytes)[p];
+			cerr << (dec) << endl;
 #endif
 
 #ifdef FIXED_KEY_AES_HASHING
@@ -1041,7 +1039,7 @@ void Mal_OTExtensionSender::MaskInputs(CBitVector& Q, CBitVector* seedbuf, CBitV
 			memcpy(sbp[u], hash_buf, AES_KEY_BYTES);
 #endif
 
-			//cout << ((unsigned int) sbp[u][0] & 0x01);
+			//cerr << ((unsigned int) sbp[u][0] & 0x01);
 			sbp[u] += AES_KEY_BYTES;
 
 			if(m_bProtocol == S_OT || m_bProtocol == OCRS_OT)
@@ -1177,7 +1175,7 @@ void Mal_OTExtensionSender::SendBlocks(int numThreads)
 			m_vSockets[csockid].Send((BYTE*) tempBlock->permchoicebits, sizeof(BYTE) * m_nChecks);
 #endif
 #ifdef DEBUG_MALICIOUS
-			cout << "Want to check otid = " << tempBlock->blockid << " of len " << tempBlock->processedOTs << " for thread "
+			cerr << "Want to check otid = " << tempBlock->blockid << " of len " << tempBlock->processedOTs << " for thread "
 					<< tempBlock->threadid << " and doing " << m_nChecks << " checks" << endl;
 #endif
 			//wait for reply and check values
@@ -1193,7 +1191,7 @@ void Mal_OTExtensionSender::SendBlocks(int numThreads)
 				exit(0);
 			} else {
 #ifdef DEBUG_MALICIOUS
-				cout << "Consistency check for block " << tempBlock->blockid << " ok" << endl;
+				cerr << "Consistency check for block " << tempBlock->blockid << " ok" << endl;
 #endif
 			}
 
@@ -1237,7 +1235,7 @@ void Mal_OTExtensionSender::SendBlocks(int numThreads)
 		}
 	}
 #ifdef OTTiming
-	cout << "Total time spent transmitting data: " << totalTnsTime << endl;
+	cerr << "Total time spent transmitting data: " << totalTnsTime << endl;
 #endif
 }
 
@@ -1253,7 +1251,7 @@ BOOL Mal_OTExtensionSender::CheckConsistentReceiveBits(BYTE* rcvhashbuf, OTBlock
 	int offset = m_nBaseOTs * blockoffset;
 
 	BYTE ca, cb;//, seedhashcli, rcvhashcli;
-	__int64 seedhashcli, rcvhashcli;
+	uint64_t seedhashcli, rcvhashcli;
 	rcvhashbufptr = rcvhashbuf;
 
 	seedbufsrvptr = block->seed_hash;
@@ -1268,19 +1266,19 @@ BOOL Mal_OTExtensionSender::CheckConsistentReceiveBits(BYTE* rcvhashbuf, OTBlock
 		cb = m_vU.GetBit(idb + offset);
 
 		//check that ida+idb == seedbufcheck and (!ida) + (!idb) == rcvbufcheck
-		for(j = 0; j < OWF_BYTES/sizeof(__int64); j++, seedbufsrvptr+=sizeof(__int64), rcvbufsrvptr+=sizeof(__int64)) {
+		for(j = 0; j < OWF_BYTES/sizeof(uint64_t); j++, seedbufsrvptr+=sizeof(uint64_t), rcvbufsrvptr+=sizeof(uint64_t)) {
 
-			seedhashcli = *(((__int64*) rcvhashbufptr) + (2*ca+cb)*2 + j);
-			rcvhashcli = *(((__int64*) rcvhashbufptr) + (2*(ca^1)+(cb^1))*2 + j);
+			seedhashcli = *(((uint64_t*) rcvhashbufptr) + (2*ca+cb)*2 + j);
+			rcvhashcli = *(((uint64_t*) rcvhashbufptr) + (2*(ca^1)+(cb^1))*2 + j);
 
 
-			if(seedhashcli != *((__int64*) seedbufsrvptr) || rcvhashcli != *((__int64*) rcvbufsrvptr)) {
+			if(seedhashcli != *((uint64_t*) seedbufsrvptr) || rcvhashcli != *((uint64_t*) rcvbufsrvptr)) {
 	#ifdef DEBUG_MALICIOUS
-				cout << "Error in " << i <<"-th consistency check: " << endl;
-				cout << "Receiver seed = " << (hex) << ((uint64_t*) (rcvhashbufptr+((2*ca+cb) * OWF_BYTES)))[0] <<
+				cerr << "Error in " << i <<"-th consistency check: " << endl;
+				cerr << "Receiver seed = " << (hex) << ((uint64_t*) (rcvhashbufptr+((2*ca+cb) * OWF_BYTES)))[0] <<
 						((uint64_t*) (rcvhashbufptr+((2*ca+cb) * OWF_BYTES) + j))[1] << ", my seed: " <<
 						((uint64_t*) seedbufsrvptr)[0] << ((uint64_t*) seedbufsrvptr)[1] << (dec) << endl;
-				cout << "Receiver sndval = " << (hex) << ((uint64_t*) (rcvhashbufptr+((2*(ca^1)+(cb^1)) * OWF_BYTES) + j))[0] <<
+				cerr << "Receiver sndval = " << (hex) << ((uint64_t*) (rcvhashbufptr+((2*(ca^1)+(cb^1)) * OWF_BYTES) + j))[0] <<
 						((uint64_t*) (rcvhashbufptr+((2*(ca^1)+(cb^1)) * OWF_BYTES) + j))[1] << ", my snd val = " <<
 						((uint64_t*) rcvbufsrvptr)[0] << ((uint64_t*) rcvbufsrvptr)[1] << (dec) << endl;
 	#endif
@@ -1296,8 +1294,8 @@ BOOL Mal_OTExtensionSender::CheckConsistentReceiveBits(BYTE* rcvhashbuf, OTBlock
 		for(int j = 0; j < OWF_BYTES /sizeof(uint64_t); j++, rcvbufptr++, chkbufptr++) {
 			if(*rcvbufptr != *chkbufptr) {
 	#ifdef DEBUG_MALICIOUS
-				cout << "Error in " << i <<"-th consistency check: " << endl;
-				cout << "Receiver hash = " << (hex) << *rcvbufptr << ", my hash: " << *chkbufptr << endl;
+				cerr << "Error in " << i <<"-th consistency check: " << endl;
+				cerr << "Receiver hash = " << (hex) << *rcvbufptr << ", my hash: " << *chkbufptr << endl;
 	#endif
 				return FALSE;
 			}
@@ -1322,7 +1320,7 @@ BOOL Mal_OTExtensionSender::verifyOT(int NumOTs)
 		processedOTBlocks = min(NUMOTBLOCKS, CEIL_DIVIDE(NumOTs-i, AES_BITS));
  		OTsPerIteration = min(processedOTBlocks * AES_BITS, NumOTs-i);
  		nSnd = CEIL_DIVIDE(OTsPerIteration * m_nBitLength, 8);
- 		//cout << "copying " << nSnd << " bytes from " << CEIL_DIVIDE(i*m_nBitLength, 8) << ", for i = " << i << endl;
+ 		//cerr << "copying " << nSnd << " bytes from " << CEIL_DIVIDE(i*m_nBitLength, 8) << ", for i = " << i << endl;
  		vSnd.Copy(m_vValues[0].GetArr() + CEIL_DIVIDE(i*m_nBitLength, 8), 0, nSnd);
  		sock.Send(vSnd.GetArr(), nSnd);
  		vSnd.Copy(m_vValues[1].GetArr() + CEIL_DIVIDE(i*m_nBitLength, 8), 0, nSnd);
@@ -1330,12 +1328,12 @@ BOOL Mal_OTExtensionSender::verifyOT(int NumOTs)
 		sock.Receive(&resp, 1);
 		if(resp == 0x00)
 		{
-			//cout << "OT verification unsuccessful" << endl;
+			cerr << "OT verification unsuccessful" << endl;
 			return false;
 		}
 	}
 	vSnd.delCBitVector();
-	//cout << "OT Verification successful" << endl;
+	cerr << "OT Verification successful" << endl;
 	return true;
 }
 
@@ -1355,10 +1353,10 @@ inline void owf(BYTE* hash_buf, int rowbytelen, BYTE* msg, BYTE* H) {
 	#endif
 	for(i = 0; i < rowbytelen; i+=OWF_BYTES, msgptr+=OWF_BYTES) {
 
-		//cout << "Expanding" << endl;
+		//cerr << "Expanding" << endl;
 		MPC_AES_KEY_EXPAND(aesowfkey, H);
 
-		//cout << "encrypting" << endl;
+		//cerr << "encrypting" << endl;
 		MPC_AES_ENCRYPT(aesowfkey, H, msgptr);
 
 		xor_128_buf(H, H, msgptr);
@@ -1373,8 +1371,8 @@ inline void owf(BYTE* hash_buf, int rowbytelen, BYTE* msg, BYTE* H) {
 #endif
 
 #ifdef DEBUG_MALICIOUS
-	cout << "owf for " << rowbytelen << " bytes of " << (hex) << ((uint64_t*) msg)[0] << ((uint64_t*) msg)[1] << (dec) << " = ";
-	cout <<  (hex) << ((uint64_t*) H)[0] << ((uint64_t*) H)[1] << (dec) << endl;
+	cerr << "owf for " << rowbytelen << " bytes of " << (hex) << ((uint64_t*) msg)[0] << ((uint64_t*) msg)[1] << (dec) << " = ";
+	cerr <<  (hex) << ((uint64_t*) H)[0] << ((uint64_t*) H)[1] << (dec) << endl;
 #endif
 
 }
@@ -1388,18 +1386,18 @@ inline void Mal_OTExtensionSender::genRandomPermutation(linking_t* outperm, int 
 	CBitVector rndstring;
 	rndstring.Create(lim * nperms, bitsint, m_vPermSeed, tmpctr);
 
-	__int64 tmpval, tmprnd;
+	uint64_t tmpval, tmprnd;
 
 	for(int i = 0, rndctr=0, j; i < nperms; i++) {
 		outperm[i].ida = i % nids;
 		for(j = 0, tmpval = 0; j < lim; j++, rndctr++) {
-			tmprnd = rndstring.Get<__int64>(rndctr),
-			tmpval = ((__int64) (tmprnd << bitsint) | tmpval);
-			tmpval = abs(tmpval % nids);
+			tmprnd = rndstring.Get<uint64_t>(rndctr),
+			tmpval = ((uint64_t) (tmprnd << bitsint) | tmpval);
+			tmpval = tmpval % nids;
 
 		}
 		outperm[i].idb = (int) tmpval;
-		//cout << "Permutation " << i << ": " << outperm[i].ida << " <-> " << outperm[i].idb << endl;
+		//cerr << "Permutation " << i << ": " << outperm[i].ida << " <-> " << outperm[i].idb << endl;
 	}
 
 	rndstring.delCBitVector();

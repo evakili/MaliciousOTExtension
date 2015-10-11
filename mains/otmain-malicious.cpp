@@ -1,6 +1,6 @@
 #include "otmain-malicious.h"
 
-//#define OTTiming
+#define OTTiming
 
 BOOL Init()
 {
@@ -46,7 +46,7 @@ BOOL Connect()
 	int nconnections = m_nNumOTThreads+1;
 
 #ifndef BATCH
-	cout << "Connecting to party "<< !m_nPID << ": " << m_nAddr << ", " << m_nPort << endl;
+	cerr << "Connecting to party "<< !m_nPID << ": " << m_nAddr << ", " << m_nPort << endl;
 #endif
 	for(int k = nconnections-1; k >= 0 ; k--)
 	{
@@ -63,11 +63,11 @@ BOOL Connect()
 				// send pid when connected
 				m_vSockets[k].Send( &k, sizeof(int) );
 		#ifndef BATCH
-				cout << " (" << !m_nPID << ") (" << k << ") connected" << endl;
+				cerr << " (" << !m_nPID << ") (" << k << ") connected" << endl;
 		#endif
 				if(k == 0) 
 				{
-					//cout << "connected" << endl;
+					//cerr << "connected" << endl;
 					return TRUE;
 				}
 				else
@@ -85,7 +85,7 @@ BOOL Connect()
 server_not_available:
 	printf("Server not available: ");
 connect_failure:
-	cout << " (" << !m_nPID << ") connection failed" << endl;
+	cerr << " (" << !m_nPID << ") connection failed" << endl;
 	return FALSE;
 }
 
@@ -94,7 +94,7 @@ connect_failure:
 BOOL Listen()
 {
 #ifndef BATCH
-	cout << "Listening: " << m_nAddr << ":" << m_nPort << ", with size: " << m_nNumOTThreads << endl;
+	cerr << "Listening: " << m_nAddr << ":" << m_nPort << ", with size: " << m_nNumOTThreads << endl;
 #endif
 	int nconnections = m_nNumOTThreads+1;
 
@@ -110,7 +110,7 @@ BOOL Listen()
 	for( int i = 0; i<nconnections; i++ ) //twice the actual number, due to double sockets for OT
 	{
 		CSocket sock;
-		//cout << "New round! " << endl;
+		//cerr << "New round! " << endl;
 		if( !m_vSockets[0].Accept(sock) )
 		{
 			cerr << "Error in accept" << endl;
@@ -128,7 +128,7 @@ BOOL Listen()
 		}
 
 	#ifndef BATCH
-		cout <<  " (" << m_nPID <<") (" << threadID << ") connection accepted" << endl;
+		cerr <<  " (" << m_nPID <<") (" << threadID << ") connection accepted" << endl;
 	#endif
 		// locate the socket appropriately
 		m_vSockets[threadID].AttachFrom(sock);
@@ -136,12 +136,12 @@ BOOL Listen()
 	}
 
 #ifndef BATCH
-	cout << "Listening finished"  << endl;
+	cerr << "Listening finished"  << endl;
 #endif
 	return TRUE;
 
 listen_failure:
-	cout << "Listen failed" << endl;
+	cerr << "Listen failed" << endl;
 	return FALSE;
 }
 
@@ -179,7 +179,7 @@ void InitOTSender(const char* address, int port, int nbaseots, int numOTs)
 #ifdef OTTiming
 	gettimeofday(&np_end, NULL);
 #ifdef BATCH
-	cout << getMillies(np_begin, np_end) << "\t";
+	cerr << getMillies(np_begin, np_end) << "\t";
 #else
 	printf("Time for performing the NP base-OTs: %f ms\n", getMillies(np_begin, np_end));
 #endif
@@ -196,14 +196,14 @@ void InitOTSender(const char* address, int port, int nbaseots, int numOTs)
 
 	assert(nblocks <= NUMOTBLOCKS);
 
-	//cout << "Initializing OT extension receiver " << endl;
+	//cerr << "Initializing OT extension receiver " << endl;
 	//perform the 2nd OT extension step to obtain the base-OTs for the next step
 	receiver = new Mal_OTExtensionReceiver(nSndVals, m_sSecLvl.symbits, m_vSockets.data(), vKeySeedMtx, m_aSeed, nbaseots, s2ots);
 
 	receiver->receive(s2ots, AES_KEY_BITS, U, seedcbitvec, R_OT, 1, mskfct);
 
 	for(int i = 0; i < s2ots; i++) {
-		//cout << i << ": " << (hex) << ((uint64_t*) (vKeySeeds +  i * AES_KEY_BYTES))[0] << ((uint64_t*)(vKeySeeds + i * AES_KEY_BYTES))[1] << (dec) << endl;
+		//cerr << i << ": " << (hex) << ((uint64_t*) (vKeySeeds +  i * AES_KEY_BYTES))[0] << ((uint64_t*)(vKeySeeds + i * AES_KEY_BYTES))[1] << (dec) << endl;
 		URev.SetBit(i, U.GetBitNoMask(i));
 	}
 	//URev.PrintBinary();
@@ -211,7 +211,7 @@ void InitOTSender(const char* address, int port, int nbaseots, int numOTs)
 #ifdef OTTiming
 	gettimeofday(&s2_end, NULL);
 #ifdef BATCH
-	cout << getMillies(s2_begin, s2_end) << "\t";
+	cerr << getMillies(s2_begin, s2_end) << "\t";
 #else
 	printf("Time for performing the 2nd-step base-OTs: %f ms\n", getMillies(s2_begin, s2_end));
 #endif
@@ -224,7 +224,7 @@ void InitOTReceiver(const char* address, int port, int nbaseots, int numOTs)
 	int wdsize = 1 << (CEIL_LOG2(nbaseots));
 	int nblocks = CEIL_DIVIDE(numOTs, NUMOTBLOCKS * wdsize);
 	int s2ots = nblocks * nbaseots;
-	//cout << "nblocks = " << nblocks <<", baseots = " << nbaseots << ", s2ots: " << s2ots << endl;
+	//cerr << "nblocks = " << nblocks <<", baseots = " << nbaseots << ", s2ots: " << s2ots << endl;
 
 #ifdef OTTiming
 	timeval np_begin, np_end, s2_begin, s2_end;
@@ -250,7 +250,7 @@ void InitOTReceiver(const char* address, int port, int nbaseots, int numOTs)
 #ifdef OTTiming
 	gettimeofday(&np_end, NULL);
 #ifdef BATCH
-	cout << getMillies(np_begin, np_end) << "\t";
+	cerr << getMillies(np_begin, np_end) << "\t";
 #else
 	printf("Time for performing the NP base-OTs: %f ms\n", getMillies(np_begin, np_end));
 #endif
@@ -275,7 +275,7 @@ void InitOTReceiver(const char* address, int port, int nbaseots, int numOTs)
 #ifdef OTTiming
 	gettimeofday(&s2_end, NULL);
 #ifdef BATCH
-	cout << getMillies(s2_begin, s2_end) << "\t";
+	cerr << getMillies(s2_begin, s2_end) << "\t";
 #else
 	printf("Time for performing the 2nd-step base-OTs: %f ms\n", getMillies(s2_begin, s2_end));
 #endif
@@ -347,7 +347,7 @@ BOOL ObliviouslySend(CBitVector& X1, CBitVector& X2, int numOTs, int bitlength, 
 #ifdef OTTiming
 	gettimeofday(&ot_end, NULL);
 #ifdef BATCH
-	cout << getMillies(ot_begin, ot_end) + rndgentime << "\t";
+	cerr << getMillies(ot_begin, ot_end) + rndgentime << "\t";
 #else
 	printf("Sender: time for OT extension %f ms\n", getMillies(ot_begin, ot_end) + rndgentime);
 #endif
@@ -369,7 +369,7 @@ BOOL ObliviouslyReceive(CBitVector& choices, CBitVector& ret, int numOTs, int bi
 #ifdef OTTiming
 	gettimeofday(&ot_end, NULL);
 #ifdef BATCH
-	cout << getMillies(ot_begin, ot_end) + rndgentime << "\t";
+	cerr << getMillies(ot_begin, ot_end) + rndgentime << "\t";
 #else
 	printf("Receiver: time for OT extension %f ms\n", getMillies(ot_begin, ot_end) + rndgentime);
 #endif
@@ -386,20 +386,20 @@ int main(int argc, char** argv)
 
 	if(argc < 3)
 	{
-		cout<< "Call as: ./mal_ot.exe role numOTs bitlen baseOTs checks ip-server" << endl;
-		cout << "role: [0/1], 0 = server, 1 = client" << endl;
-		cout << "numOTs: [int] Number of OTs" << endl;
-		cout << "bitlen: [int] Bit-Length of the transferred strings (default:128)" << endl;
-		cout << "baseOTs: [int] number of baseOTs (default 190)" << endl;
-		cout << "checks: [int] number of checks (default 380)" << endl;
-		cout << "ip-server: [char*] (default 127.0.0.1)" << endl;
+		cerr<< "Call as: ./mal_ot.exe role numOTs bitlen baseOTs checks ip-server" << endl;
+		cerr << "role: [0/1], 0 = server, 1 = client" << endl;
+		cerr << "numOTs: [int] Number of OTs" << endl;
+		cerr << "bitlen: [int] Bit-Length of the transferred strings (default:128)" << endl;
+		cerr << "baseOTs: [int] number of baseOTs (default 190)" << endl;
+		cerr << "checks: [int] number of checks (default 380)" << endl;
+		cerr << "ip-server: [char*] (default 127.0.0.1)" << endl;
 		return 0;
 	}
 
 	//Determines whether the program is executed in the sender or receiver role
 	m_nPID = atoi(argv[1]);
 #ifndef BATCH
-	cout << "Playing as role: " << m_nPID << endl;
+	cerr << "Playing as role: " << m_nPID << endl;
 #endif
 	//the number of OTs that are performed. Has to be initialized to a certain minimum size due to
 	int numOTs = 10000000;
@@ -456,7 +456,7 @@ int main(int argc, char** argv)
 
 
 #ifndef BATCH
-		cout << "Sender performing " << numOTs << " OT extensions on " << bitlength << " bit elements" << endl;
+		cerr << "Sender performing " << numOTs << " OT extensions on " << bitlength << " bit elements" << endl;
 #endif
 		ObliviouslySend(X1, X2, numOTs, bitlength, version);
 	}
@@ -473,7 +473,7 @@ int main(int argc, char** argv)
 
 
 #ifndef BATCH
-		cout << "Receiver performing " << numOTs << " OT extensions on " << bitlength << " bit elements" << endl;
+		cerr << "Receiver performing " << numOTs << " OT extensions on " << bitlength << " bit elements" << endl;
 #endif
 		ObliviouslyReceive(choices, response, numOTs, bitlength, version);
 	}
@@ -481,7 +481,7 @@ int main(int argc, char** argv)
 #ifdef OTTiming
 	gettimeofday(&total_end, NULL);
 #ifdef BATCH
-	cout << getMillies(total_begin, total_end) << endl;
+	cerr << getMillies(total_begin, total_end) << endl;
 #else
 	printf("Time for performing the overall evaluation: %f ms\n", getMillies(total_begin, total_end));
 #endif

@@ -1,7 +1,7 @@
 #ifndef __brick_h__
 #define __brick_h__
 
-//#include "typedefs.h"
+#include "typedefs.h"
 #include "crypto.h"
 
 	#ifdef OTEXT_USE_GMP
