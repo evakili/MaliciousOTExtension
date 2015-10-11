@@ -11,7 +11,7 @@
 #include "crypto.h"
 
 
-#include "../util/typedefs.h"
+//#include "../util/typedefs.h"
 #include <math.h>
 #include <iostream>
 #include <iomanip>
@@ -103,7 +103,7 @@ class CBitVector
 {
 public:
 	CBitVector(){ Init(); }
-	CBitVector(int bits){ Init(); Create(bits);}
+	CBitVector(u_int64 bits){ Init(); Create(bits);}
 	CBitVector(int bits, BYTE* seed, int& cnt){ Init(); Create(bits, seed, cnt);}
 
 	void Init() {m_pBits =  NULL; m_nSize = 0; m_nKey = NULL;}
@@ -125,7 +125,7 @@ public:
 	 */
 
 	//Create in bits and bytes
-	void Create(int bits);
+	void Create(u_int64 bits);
 	void CreateBytes(int bytes) {	Create(bytes<<3); }
 	void CreateZeros(int bits) { Create(bits);		memset(m_pBits, 0, m_nSize); }
 	//Create and fill with random values

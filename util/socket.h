@@ -11,7 +11,7 @@ class CSocket
 public:
 	CSocket(){ m_hSock = INVALID_SOCKET; }
 	~CSocket(){ }
-	//~CSocket(){ cerr << "Closing Socket!" << endl; Close(); }
+	//~CSocket(){ cout << "Closing Socket!" << endl; Close(); }
 	
 public:
 	BOOL Socket()
@@ -38,8 +38,9 @@ public:
 
 		success =  (m_hSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) != INVALID_SOCKET; 
 
+		//u_long args = 1;
 		// set the socket to non-blocking mode:
-		//ioctlsocket(m_hSock, FIONBIO, 1);
+		//ioctlsocket(m_hSock, FIONBIO, &args);
 
 		// disable nagle: using TCP_NODELAY = 1 (true)
 		//setsockopt(m_hSock, IPPROTO_TCP, TCP_NODELAY, (char*)&bOptVal, bOptLen);
@@ -48,9 +49,22 @@ public:
 		//setsockopt(m_hSock, IPPROTO_TCP, TCP_MAXSEG , (char*)&OptSegSizeLen, OptSegSize);
 		// disable tcp slow start - (false)
 		//setsockopt(m_hSock, IPPROTO_TCP, TM_TCP_SLOW_START , (char*)&bOptVal, bOptLen);
-		//cerr << "TCP_MAXSEG: " << TCP_MAXSEG << endl;
+		//cout << "TCP_MAXSEG: " << TCP_MAXSEG << endl;
 		return success;
 	
+	}
+
+	void setBlockingMode(long mode){
+		u_long args = mode;
+		// set the socket to non-blocking mode:
+		ioctlsocket(m_hSock, FIONBIO, &args);
+	}
+
+	void DisableNagle(){
+		// disable nagle: using TCP_NODELAY = 1 (true)
+		BOOL bOptVal = true;
+		int bOptLen = sizeof(BOOL);
+		setsockopt(m_hSock, IPPROTO_TCP, TCP_NODELAY, (char*)&bOptVal, bOptLen);
 	}
 
 	void Close()
@@ -172,7 +186,6 @@ public:
 		{
 			setsockopt(m_hSock, SOL_SOCKET, SO_RCVTIMEO, (char*) &lTOSMilisec, sizeof(lTOSMilisec));
 		}
-
 		int ret = connect(m_hSock, (sockaddr*)&sockAddr, sizeof(sockAddr));
 		
 		if( ret >= 0 && lTOSMilisec > 0 )
@@ -207,7 +220,7 @@ public:
 
 	int Receive(void* pBuf, int nLen, int nFlags = 0)
 	{
-		//cerr << "Receiving " << nLen << " bytes" << endl;
+		//cout << "Receiving " << nLen << " bytes" << endl;
 		char* p = (char*) pBuf;
 		int n = nLen;
 		int ret = 0;
@@ -249,9 +262,11 @@ public:
  
 	int Send(const void* pBuf, int nLen, int nFlags = 0)
 	{
-		//cerr << "Sending " << nLen << " bytes: " << ((unsigned int*)pBuf)[0] << endl;
+		//cout << "Sending " << nLen << " bytes: " << ((unsigned int*)pBuf)[0] << endl;
 		return send(m_hSock, (char*)pBuf, nLen, nFlags);
 	}	
+
+
 	  
 private:
 	SOCKET	m_hSock;

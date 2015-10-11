@@ -1,6 +1,6 @@
 #ifndef __DOUBLE_EXP_H_
 #define __DOUBLE_EXP_H_
-#include "typedefs.h"
+//#include "typedefs.h"
 #include "crypto.h"
 
 	#ifdef OTEXT_USE_GMP

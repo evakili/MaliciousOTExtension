@@ -5,8 +5,12 @@
 BOOL NaorPinkas::Receiver(int nSndVals, int nOTs, CBitVector& choices,
 		CSocket& socket, BYTE* ret) {
 
-	fieldelement PK_sigma[nOTs], PK0, pDec[nOTs], pC[nSndVals], g;
-	number pK[nOTs];
+	//fieldelement PK_sigma[nOTs], PK0, pDec[nOTs], pC[nSndVals], g;
+	fieldelement* PK_sigma = new fieldelement[nOTs];
+	fieldelement PK0, g;
+	fieldelement* pDec = new fieldelement[nOTs];
+	fieldelement* pC = new fieldelement[nSndVals];
+	number* pK = new number[nOTs];
 
 	brickexp bg, bc;
 
@@ -52,7 +56,7 @@ BOOL NaorPinkas::Receiver(int nSndVals, int nOTs, CBitVector& choices,
 		} else {
 			FieldElementSet(PK0, PK_sigma[k]);//PK0 = PK_sigma[k];
 		}
-		//cerr << "PK0: " << PK0 << ", PK_sigma: " << PK_sigma[k] << ", choice: " << choice << ", pC[choice: " << pC[choice] << endl;
+		//cout << "PK0: " << PK0 << ", PK_sigma: " << PK_sigma[k] << ", choice: " << choice << ", pC[choice: " << pC[choice] << endl;
 		FieldElementToByte(pBufIdx, m_fParams.elebytelen, PK0);
 		pBufIdx += m_fParams.elebytelen;
 	}
@@ -76,6 +80,10 @@ BOOL NaorPinkas::Receiver(int nSndVals, int nOTs, CBitVector& choices,
 	BrickDelete(&bg);
 
 	delete [] pBuf;
+	delete []  PK_sigma;
+	delete [] pDec;
+	delete []  pC;
+	delete []  pK;
 
 	return true;
 }
@@ -87,7 +95,10 @@ BOOL NaorPinkas::Sender(int nSndVals, int nOTs, CSocket& socket, BYTE* ret)
 {
 	number alpha, PKr, tmp;
 
-	fieldelement pCr[nSndVals], pC[nSndVals], fetmp, PK0r, g;
+	//fieldelement pCr[nSndVals], pC[nSndVals], fetmp, PK0r, g;
+	fieldelement* pCr = new fieldelement[nSndVals];
+	fieldelement* pC = new fieldelement[nSndVals];
+	fieldelement fetmp, PK0r, g;
 
 	BYTE* pBuf = new BYTE[m_fParams.elebytelen * nOTs];
 
@@ -133,7 +144,8 @@ BOOL NaorPinkas::Sender(int nSndVals, int nOTs, CSocket& socket, BYTE* ret)
 	socket.Receive(pBuf, nBufSize);
 
 	pBufIdx = pBuf;
-	fieldelement pPK0[nOTs];
+	//fieldelement pPK0[nOTs];
+	fieldelement* pPK0 = new fieldelement[nOTs];
 
 	for (int k = 0; k < nOTs; k++) {
 		FieldElementInit(pPK0[k]);
@@ -169,6 +181,9 @@ BOOL NaorPinkas::Sender(int nSndVals, int nOTs, CSocket& socket, BYTE* ret)
 	}
 
 	delete [] pBuf;
+	delete [] pCr;
+	delete [] pC;
+	delete [] pPK0;
 
 	return true;
 }

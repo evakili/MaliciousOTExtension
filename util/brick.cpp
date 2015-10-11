@@ -47,11 +47,11 @@ void FixedPointExp::Init(mpz_t g, mpz_t p, int fieldsize) {
   m_isInitialized = true;
 
 //   for (unsigned u=0; u<m_numberOfElements; ++u) {
-//     cerr << "table[" << u << "] = " << m_table[u] << endl;
+//     cout << "table[" << u << "] = " << m_table[u] << endl;
 //     ZZ res;
 //     ZZ ex = power_ZZ(2,u);
 //     PowerMod(res, m_g, ex, m_p);
-//     cerr << "    (Should be = " << res << ")" << endl;
+//     cout << "    (Should be = " << res << ")" << endl;
 //   }
 }
 

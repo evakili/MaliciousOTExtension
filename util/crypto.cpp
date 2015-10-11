@@ -238,7 +238,7 @@ BOOL MiraclInit(SECLVL lvl, BYTE* seed, fparams* params) {
 	*(params->eccparams.X) = ecx;
 	*(params->eccparams.Y) = ecy;
 
-	//cerr << "params->eccparams.X : " << (*params->eccparams.X) << endl;
+	//cout << "params->eccparams.X : " << (*params->eccparams.X) << endl;
 
 	//reset the base representation
 	mip->IOBASE = 10;
@@ -347,7 +347,7 @@ void printepoint(epoint point)
 {
 	Big x, y;
 	epoint_getxyz(&point,x.getbig(),y.getbig(),NULL);
-	cerr << "(" << x << ", " << y << ")" << endl;
+	cout << "(" << x << ", " << y << ")" << endl;
 }
 
 

@@ -3,7 +3,9 @@
 BOOL PVWDDH::Receiver(int nSndVals, int nOTs, CBitVector& choices, CSocket& socket, BYTE* retbuf)
 {
 	fieldelement g[2], h[2], pkg, pkh, u, zkcommit[2];
-	number y, alpha, r[nOTs], zkr, zkchallenge, zkproof, modnum;
+	//number y, alpha, r[nOTs], zkr, zkchallenge, zkproof, modnum;
+	number y, alpha, zkr, zkchallenge, zkproof, modnum;
+	number* r = new number[nOTs];
 	BYTE *sndbuf, *sndbufptr, *rcvbuf, *rcvbufptr, *retbufptr, *tmpbuf;
 
 	brickexp bg[2];
@@ -133,7 +135,7 @@ BOOL PVWDDH::Receiver(int nSndVals, int nOTs, CBitVector& choices, CSocket& sock
 	free(sndbuf);
 	free(rcvbuf);
 	free(tmpbuf);
-
+	delete [] r;
 	return true;
 }
 

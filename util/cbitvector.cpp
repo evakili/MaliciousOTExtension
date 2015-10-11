@@ -53,10 +53,10 @@ void CBitVector::Create(int bits, BYTE* seed, int& cnt)
 	FillRand(bits, seed, cnt);
 }
 
-void CBitVector::Create(int bits)
+void CBitVector::Create(u_int64 bits)
 {
 	if(bits == 0) bits = AES_BITS;
-	//cerr << "creating " << bits << " sized vector" << endl;
+	//cout << "creating " << bits << " sized vector" << endl;
 	//TODO: Uncomment either of them
 	//if( m_pBits ) free(m_pBits);
 	if(m_nSize > 0 ) free(m_pBits);
@@ -154,21 +154,21 @@ void CBitVector::SetBits(BYTE* p, int pos, int len)
 		temp = p[i];
 		m_pBits[posctr] = (m_pBits[posctr] & RESET_BIT_POSITIONS[lowermask]) | ((temp << lowermask) & 0xFF);
 		m_pBits[posctr+1] = (m_pBits[posctr+1] & RESET_BIT_POSITIONS_INV[uppermask]) | (temp >> uppermask);
-		//cerr << "Iteration for whole byte done" << endl;
+		//cout << "Iteration for whole byte done" << endl;
 	}
 	int remlen = len & 0x07;
 	if(remlen)
 	{
 		temp = p[i] & RESET_BIT_POSITIONS[remlen];
-		//cerr << "temp = " << (unsigned int) temp << endl;
+		//cout << "temp = " << (unsigned int) temp << endl;
 		if(remlen <= uppermask)
 		{
-			//cerr << "Setting " << remlen  << " lower bits with lowermask = " << lowermask << ", and temp " << (unsigned int) temp << endl;
+			//cout << "Setting " << remlen  << " lower bits with lowermask = " << lowermask << ", and temp " << (unsigned int) temp << endl;
 			m_pBits[posctr] = (m_pBits[posctr] & (~(((1<<remlen)-1) << lowermask))) | ((temp << lowermask) & 0xFF);
 		}
 		else
 		{
-			//cerr << "Setting " << remlen  << " bits with lowermask = " << lowermask << ", uppermask = " << uppermask << ", and temp = " << (unsigned int) temp << endl;
+			//cout << "Setting " << remlen  << " bits with lowermask = " << lowermask << ", uppermask = " << uppermask << ", and temp = " << (unsigned int) temp << endl;
 			m_pBits[posctr] = (m_pBits[posctr] & RESET_BIT_POSITIONS[lowermask]) | ((temp << lowermask) & 0xFF);
 			m_pBits[posctr+1] = (m_pBits[posctr+1] & (~(((1<<(remlen-uppermask))-1)))) | (temp >> uppermask);
 		}
@@ -213,7 +213,7 @@ void CBitVector::GetBits(BYTE* p, int pos, int len)
 	int uppermask = 8 - lowermask;
 
 	int i;
-	BYTE temp;
+//	BYTE temp;
 	for(i = 0; i < len / (sizeof(BYTE)*8); i++, posctr++)
 	{
 		p[i] = ((m_pBits[posctr] & GET_BIT_POSITIONS[lowermask]) >> lowermask) & 0xFF;
@@ -225,18 +225,18 @@ void CBitVector::GetBits(BYTE* p, int pos, int len)
 		//temp = p[i] & GET_BIT_POSITIONS[remlen];
 		if(remlen <= uppermask)
 		{
-			//cerr << "Getting " << remlen  << " lower bits with lowermask = " << lowermask << ", " << (unsigned int) m_pBits[posctr] << endl;
+			//cout << "Getting " << remlen  << " lower bits with lowermask = " << lowermask << ", " << (unsigned int) m_pBits[posctr] << endl;
 			p[i] = ((m_pBits[posctr] & (((1<<remlen)-1 << lowermask))) >> lowermask) & 0xFF;
-			//cerr << "p[i] = " << (unsigned int) p[i] << endl;
+			//cout << "p[i] = " << (unsigned int) p[i] << endl;
 		}
 		else
 		{
-			//cerr << "Getting upper" << endl;
-			//cerr << "Getting " << remlen  << " upper bits with lowermask = " << lowermask << ", " << (unsigned int) m_pBits[posctr] << ", and uppermask = "
+			//cout << "Getting upper" << endl;
+			//cout << "Getting " << remlen  << " upper bits with lowermask = " << lowermask << ", " << (unsigned int) m_pBits[posctr] << ", and uppermask = "
 			//		<< uppermask << ", " << (unsigned int) m_pBits[posctr+1] << endl;
 			p[i] = ((m_pBits[posctr] & GET_BIT_POSITIONS[lowermask]) >> lowermask) & 0xFF;
 			p[i] |= (m_pBits[posctr+1] & (((1<<(remlen-uppermask))-1))) << uppermask;
-			//cerr << "p[i] = " << (unsigned int) p[i] << endl;
+			//cout << "p[i] = " << (unsigned int) p[i] << endl;
 		}
 	}
 }
@@ -265,7 +265,7 @@ void CBitVector::XORBits(BYTE* p, int pos, int len)
 {
 	if(len < 1 || (pos+len) > m_nSize << 3)
 	{
-		//cerr << "m_nSize = " << m_nSize << ", pos+len = " << (pos + len)/8 << endl;
+		//cout << "m_nSize = " << m_nSize << ", pos+len = " << (pos + len)/8 << endl;
 		return;
 	}
 	if(len == 1)
@@ -289,21 +289,21 @@ void CBitVector::XORBits(BYTE* p, int pos, int len)
 		temp = p[i];
 		m_pBits[posctr] ^= ((temp << lowermask) & 0xFF);
 		m_pBits[posctr+1] ^= (temp >> uppermask);
-		//cerr << "Iteration for whole byte done" << endl;
+		//cout << "Iteration for whole byte done" << endl;
 	}
 	int remlen = len & 0x07;
 	if(remlen)
 	{
 		temp = p[i] & RESET_BIT_POSITIONS[remlen];
-		//cerr << "temp = " << (unsigned int) temp << endl;
+		//cout << "temp = " << (unsigned int) temp << endl;
 		if(remlen <= uppermask)
 		{
-			//cerr << "Setting " << remlen  << " lower bits with lowermask = " << lowermask << ", and temp " << (unsigned int) temp << endl;
+			//cout << "Setting " << remlen  << " lower bits with lowermask = " << lowermask << ", and temp " << (unsigned int) temp << endl;
 			m_pBits[posctr] ^= ((temp << lowermask) & 0xFF);
 		}
 		else
 		{
-			//cerr << "Setting " << remlen  << " bits with lowermask = " << lowermask << ", uppermask = " << uppermask << ", and temp = " << (unsigned int) temp << endl;
+			//cout << "Setting " << remlen  << " bits with lowermask = " << lowermask << ", uppermask = " << uppermask << ", and temp = " << (unsigned int) temp << endl;
 			m_pBits[posctr] ^= ((temp << lowermask) & 0xFF);
 			m_pBits[posctr+1] ^= (temp >> uppermask);
 		}
@@ -437,34 +437,34 @@ void CBitVector::SetAND(BYTE* p, BYTE* q, int pos, int len)
 void CBitVector:: Print(int fromBit, int toBit) {
 	int to = toBit > (m_nSize << 3)? (m_nSize << 3) : toBit;
 	for (int i = fromBit; i < to; i++)	{
-		cerr << (unsigned int) GetBitNoMask(i);
+		cout << (unsigned int) GetBitNoMask(i);
 	}
-	cerr << endl;
+	cout << endl;
 }
 
 void CBitVector::PrintHex(int fromByte, int toByte) {
 	for (int i = fromByte; i < toByte; i++) {
-		cerr << setw(2) << setfill('0') << (hex) << ((unsigned int) m_pBits[i]);
+		cout << setw(2) << setfill('0') << (hex) << ((unsigned int) m_pBits[i]);
 	}
-	cerr << (dec) << endl;
+	cout << (dec) << endl;
 }
 
 void CBitVector::PrintHex()
 {
 	for (int i = 0; i < m_nSize; i++)
 	{
-		cerr << setw(2) << setfill('0') << (hex) << ((unsigned int) m_pBits[i]);
+		cout << setw(2) << setfill('0') << (hex) << ((unsigned int) m_pBits[i]);
 	}
-	cerr << (dec) << endl;
+	cout << (dec) << endl;
 }
 
 void CBitVector::PrintBinaryMasked(int from, int to)
 {
 	for (int i = from; i < to; i++)
 	{
-		cerr << (unsigned int) GetBit(i);
+		cout << (unsigned int) GetBit(i);
 	}
-	cerr << endl;
+	cout << endl;
 }
 
 void CBitVector::PrintContent()
@@ -478,23 +478,23 @@ void CBitVector::PrintContent()
 	{
 		for(int i = 0; i < m_nNumElements; i++)
 		{
-			cerr << Get<int>(i) << ", ";
+			cout << Get<int>(i) << ", ";
 		}
-		cerr << endl;
+		cout << endl;
 	}
 	else
 	{
 		for(int i = 0; i < m_nNumElements; i++)
 		{
-			cerr << "(";
+			cout << "(";
 			for(int j = 0; j < m_nNumElementsDimB-1; j++)
 			{
-				cerr << Get2D<int>(i, j) << ", ";
+				cout << Get2D<int>(i, j) << ", ";
 			}
-			cerr << Get2D<int>(i, m_nNumElementsDimB-1);
-			cerr << "), ";
+			cout << Get2D<int>(i, m_nNumElementsDimB-1);
+			cout << "), ";
 		}
-		cerr << endl;
+		cout << endl;
 	}
 }
 
@@ -547,17 +547,17 @@ unsigned int CBitVector::GetInt(int bitPos, int bitLen)
 	ret = (m_pBits[i++] >> (j)) & (GetMask(min(8, bitLen)));
 	if (bitLen == 1)
 		return ret;
-	//cerr << "MpBits: " << (unsigned int) m_pBits[i-1] << ", ret: " << ret << endl;
+	//cout << "MpBits: " << (unsigned int) m_pBits[i-1] << ", ret: " << ret << endl;
 	j = 8-j;
 	for(k = bitLen - j; i<(bitPos + bitLen+7)/8-1; i++, j+=8, k-=8)
 	{
 		//ret |= REVERSE_BYTE_ORDER[m_pBits[i+pos]] << (i*8);
 		ret |= m_pBits[i] << j;
-		//cerr << "MpBits: " <<(unsigned int) m_pBits[i] << ", ret: " << ret << ", j: " << j << endl;
+		//cout << "MpBits: " <<(unsigned int) m_pBits[i] << ", ret: " << ret << ", j: " << j << endl;
 		//m_pBits[i+pos] = ( ((REVERSE_NIBBLE_ORDER[(p>>((2*i)*4))&0xF] << 4) | REVERSE_NIBBLE_ORDER[(p>>((2*i+1)*4))&0xF])  & 0xFF);//((p>>((2*i+1)*4))&0xF) | ((p>>((2*i)*4))&0xF) & 0xFF;
 	}
 	ret |= (m_pBits[i] & SELECT_BIT_POSITIONS[k]) << j; //for the last execution 0<=k<=8
-	//cerr << "MpBits: " <<(unsigned int) m_pBits[i] << ", ret: " << ret << ", k = " << k <<  ", selects: " << (unsigned int) SELECT_BIT_POSITIONS[k] << ", j: " << j << endl;
+	//cout << "MpBits: " <<(unsigned int) m_pBits[i] << ", ret: " << ret << ", k = " << k <<  ", selects: " << (unsigned int) SELECT_BIT_POSITIONS[k] << ", j: " << j << endl;
 	return ret;
 }
 
@@ -600,7 +600,7 @@ void CBitVector::EklundhBitTranspose(int rows, int columns)
 		rowaptr = (REGISTER_SIZE*) m_pBits;
 		rowbptr = rowaptr + destidx;//ptr = temp_mat;
 
-		//cerr << "numrounds = " << numrounds << " iterations: " << LOG2_REGISTER_SIZE << ", offset = " << offset << ", srcidx = " << srcidx << ", destidx = " << destidx << endl;
+		//cout << "numrounds = " << numrounds << " iterations: " << LOG2_REGISTER_SIZE << ", offset = " << offset << ", srcidx = " << srcidx << ", destidx = " << destidx << endl;
 		//Preset the masks that are required for bit-level swapping operations
 		mask = TRANSPOSITION_MASKS[i];
 		invmask = ~mask;

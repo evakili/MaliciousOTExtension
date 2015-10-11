@@ -10,7 +10,7 @@
 
 
 #include <vector>
-#include <sys/time.h>
+#include <time.h>
 
 #include <limits.h>
 #include <iomanip>

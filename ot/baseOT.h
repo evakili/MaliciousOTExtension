@@ -58,11 +58,11 @@ protected:
 			MPC_HASH_UPDATE(&sha, (BYTE*) &ctr, sizeof(int));
 			MPC_HASH_FINAL(&sha, ret);
 
-			/*cerr << "i = " << ctr << ": " << (hex);
+			/*cout << "i = " << ctr << ": " << (hex);
 			for(int i = 0; i < SHA1_BYTES; i++) {
-				cerr << (unsigned int) ret[i];
+				cout << (unsigned int) ret[i];
 			}
-			cerr << (dec) << endl;*/
+			cout << (dec) << endl;*/
 		}
 
 
